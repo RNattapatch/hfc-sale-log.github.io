@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>SalesTrack - บันทึกกิจกรรม (HFC)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@400,1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: '#98001b', secondary: '#be1e2d', surface: '#f5eced' },
+                    fontFamily: { sans: ['"IBM Plex Sans Thai"', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style> body { background-color: #f5eced; } </style>
+</head>
+<body class="text-gray-900 pb-20">
+    <header class="bg-primary text-white p-4 shadow-md sticky top-0 z-10 flex justify-between items-center">
+        <h1 class="text-xl font-bold">บันทึกกิจกรรมการขาย</h1>
+        <span class="material-symbols-outlined">assignment_add</span>
+    </header>
+
+    <main class="p-4 max-w-md mx-auto mt-2">
+        <form id="salesForm" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-4">
+            <div>
+                <label class="block text-sm font-semibold mb-1 text-gray-700">ชื่อเซลล์ *</label>
+                <input type="text" id="salesperson" required class="w-full p-2 border-b-2 border-gray-300 focus:border-primary outline-none bg-gray-50"/>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1 text-gray-700">ชื่อลูกค้า *</label>
+                <input type="text" id="client" required class="w-full p-2 border-b-2 border-gray-300 focus:border-primary outline-none bg-gray-50"/>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1 text-gray-700">ยอดขาย (บาท)</label>
+                <input type="number" id="amount" class="w-full p-2 border-b-2 border-gray-300 focus:border-primary outline-none bg-gray-50"/>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1 text-gray-700">ชื่อรูปภาพ (Title)</label>
+                <input type="text" id="imageTitle" class="w-full p-2 border-b-2 border-gray-300 focus:border-primary outline-none bg-gray-50"/>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1 text-gray-700">แนบรูปภาพ</label>
+                <input type="file" id="imageFile" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-secondary"/>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1 text-gray-700">Note (หมายเหตุ)</label>
+                <textarea id="note" rows="3" class="w-full p-2 border-b-2 border-gray-300 focus:border-primary outline-none bg-gray-50"></textarea>
+            </div>
+            <button type="submit" id="submitBtn" class="w-full bg-primary text-white font-bold py-3 rounded-md shadow hover:bg-secondary transition flex justify-center items-center gap-2 mt-6">
+                <span class="material-symbols-outlined">send</span> บันทึกข้อมูล
+            </button>
+        </form>
+    </main>
+
+    <nav class="fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around p-2 pb-4 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+        <a href="index.html" class="flex flex-col items-center text-primary font-semibold w-1/2">
+            <span class="material-symbols-outlined">edit_document</span>
+            <span class="text-xs mt-1">บันทึกข้อมูล</span>
+        </a>
+        <a href="act-code.html" class="flex flex-col items-center text-gray-400 hover:text-gray-600 w-1/2">
+            <span class="material-symbols-outlined">history</span>
+            <span class="text-xs mt-1">ประวัติ</span>
+        </a>
+    </nav>
+
+    <script>
+        // 👇👇 นำ Web App URL ของคุณมาใส่ตรงนี้ 👇👇
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw5rkMtONIsP47Ha16Zy9OwhKFdgszZa2RG5Kmaw11ueejhx_yzHo4dp4eSI8HeNDV6/exec";
+        // 👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆
+
+        const form = document.getElementById('salesForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> กำลังบันทึก...';
+
+            let base64Image = "";
+            const fileInput = document.getElementById('imageFile');
+            
+            if (fileInput.files.length > 0) {
+                base64Image = await compressImage(fileInput.files[0]);
+            }
+
+            const payload = {
+                salesperson: document.getElementById('salesperson').value,
+                client: document.getElementById('client').value,
+                amount: document.getElementById('amount').value,
+                imageTitle: document.getElementById('imageTitle').value,
+                note: document.getElementById('note').value,
+                imageBase64: base64Image
+            };
+
+            try {
+                const response = await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if(result.status === 'success') {
+                    alert('บันทึกข้อมูลสำเร็จ!');
+                    form.reset();
+                } else {
+                    alert('เกิดข้อผิดพลาด: ' + result.message);
+                }
+            } catch (error) {
+                alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span class="material-symbols-outlined">send</span> บันทึกข้อมูล';
+            }
+        });
+
+        // ฟังก์ชันบีบอัดรูปภาพก่อนส่ง (เพื่อป้องกัน Timeout และประหยัดเน็ต)
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800; // ปรับขนาดกว้างสุดที่ 800px
+                        const scaleSize = MAX_WIDTH / img.width;
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scaleSize;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.7)); // คุณภาพ 70%
+                    };
+                };
+            });
+        }
+    </script>
+</body>
+</html>
