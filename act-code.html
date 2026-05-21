@@ -61,7 +61,6 @@
                 .then(res => res.json())
                 .then(result => {
                     if (result.status === 'success') {
-                        // กลับด้านข้อมูลให้ข้อมูลล่าสุดอยู่บนสุด
                         renderCards(result.data.reverse());
                     } else {
                         container.innerHTML = `<div class="text-center text-red-600 mt-10">เกิดข้อผิดพลาด: ${result.message}</div>`;
@@ -82,7 +81,6 @@
             }
 
             data.forEach(item => {
-                // ข้ามบรรทัดว่าง
                 if(!item.Timestamp && !item.Salesperson) return;
                 
                 const dateObj = new Date(item.Timestamp);
@@ -119,7 +117,6 @@
             });
         }
 
-        // ฟังก์ชันเปิด/ปิดรูปภาพใหญ่
         function openModal(imgUrl) {
             document.getElementById('modalImage').src = imgUrl;
             document.getElementById('imageModal').classList.remove('hidden');
@@ -129,7 +126,6 @@
             document.getElementById('modalImage').src = '';
         }
 
-        // โหลดข้อมูลทันทีที่เปิดหน้าเว็บ
         document.addEventListener('DOMContentLoaded', fetchData);
     </script>
 </body>
