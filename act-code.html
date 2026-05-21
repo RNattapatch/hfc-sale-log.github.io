@@ -33,7 +33,7 @@
             <button onclick="closeModal()" class="absolute -top-10 right-0 text-white flex items-center gap-1">
                 <span class="material-symbols-outlined">close</span> ปิด
             </button>
-            <img id="modalImage" src="" class="w-full h-auto rounded-md" />
+            <img id="modalImage" src="" class="w-full h-auto rounded-md max-h-[80vh] object-contain" />
         </div>
     </div>
 
@@ -49,7 +49,7 @@
     </nav>
 
     <script>
-        // 👇👇 นำ Web App URL ของคุณมาใส่ตรงนี้ (อันเดียวกับหน้าฟอร์ม) 👇👇
+        // 👇👇 นำ Web App URL ของคุณมาใส่ตรงนี้ 👇👇
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw5rkMtONIsP47Ha16Zy9OwhKFdgszZa2RG5Kmaw11ueejhx_yzHo4dp4eSI8HeNDV6/exec";
         // 👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆
 
@@ -88,11 +88,29 @@
                 const amountText = item.Amount ? `฿${parseFloat(item.Amount).toLocaleString()}` : '-';
                 
                 let imageHtml = '';
-                if (item['Image URL']) {
+                if (item['Image URL'] && item['Image URL'].trim() !== "") {
+                    const driveImageUrl = item['Image URL'];
+                    let previewUrl = '';
+                    
+                    // ใช้ Regex ดึง File ID เพื่อสร้างลิงก์สำหรับดึงรูปมาแสดงตรงๆ (Direct Stream)
+                    const match = driveImageUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                    if (match && match[1]) {
+                        previewUrl = `https://lh3.googleusercontent.com/d/${match[1]}=w400`;
+                    }
+
                     imageHtml = `
-                        <div class="mt-3">
-                            <p class="text-xs text-gray-500 mb-1"><span class="material-symbols-outlined text-[14px] align-middle">image</span> ${item['Image Title'] || 'รูปแนบ'}</p>
-                            <img src="${item['Image URL']}" onclick="openModal('${item['Image URL']}')" class="h-24 w-auto rounded border border-gray-200 cursor-pointer object-cover" />
+                        <div class="mt-3 pt-2 border-t border-gray-100">
+                            <p class="text-xs text-gray-500 mb-2 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[16px]">image</span> 
+                                <span>${item['Image Title'] || 'รูปภาพแนบ'}</span>
+                            </p>
+                            ${previewUrl ? `<img src="${previewUrl}" onclick="openModal('${previewUrl}')" class="h-28 w-auto rounded border border-gray-200 cursor-pointer object-cover mb-2 max-w-full hover:opacity-90 transition" onerror="this.style.display='none'" />` : ''}
+                            <div class="mt-1">
+                                <a href="${driveImageUrl}" target="_blank" class="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-primary text-xs font-semibold py-1.5 px-2.5 rounded border border-gray-300 transition">
+                                    <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+                                    เปิดดูรูปเต็มบน Google Drive
+                                </a>
+                            </div>
                         </div>
                     `;
                 }
